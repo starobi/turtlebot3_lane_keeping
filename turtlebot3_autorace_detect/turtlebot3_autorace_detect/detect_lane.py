@@ -78,7 +78,23 @@ class DetectLane(Node):
                     parameter_descriptor_saturation_lightness),
                 ('detect.lane.yellow.lightness_h', 255,
                     parameter_descriptor_saturation_lightness),
-                ('is_detection_calibration_mode', False)
+                ('is_detection_calibration_mode', False),
+                # Rango rojo 1 (Hue bajo)
+                ('detect.lane.red1.hue_l', 0, parameter_descriptor_hue),
+                ('detect.lane.red1.hue_h', 10, parameter_descriptor_hue),
+                ('detect.lane.red1.saturation_l', 100, parameter_descriptor_saturation_lightness),
+                ('detect.lane.red1.saturation_h', 255, parameter_descriptor_saturation_lightness),
+                ('detect.lane.red1.lightness_l', 100, parameter_descriptor_saturation_lightness),
+                ('detect.lane.red1.lightness_h', 255, parameter_descriptor_saturation_lightness),
+                # Rango rojo 2 (Hue alto)
+                ('detect.lane.red2.hue_l', 160, parameter_descriptor_hue),
+                ('detect.lane.red2.hue_h', 179, parameter_descriptor_hue),
+                ('detect.lane.red2.saturation_l', 100, parameter_descriptor_saturation_lightness),
+                ('detect.lane.red2.saturation_h', 255, parameter_descriptor_saturation_lightness),
+                ('detect.lane.red2.lightness_l', 100, parameter_descriptor_saturation_lightness),
+                ('detect.lane.red2.lightness_h', 255, parameter_descriptor_saturation_lightness),
+                ('use_read_as_white_lane',True),
+
             ]
         )
 
@@ -107,6 +123,22 @@ class DetectLane(Node):
             'detect.lane.yellow.lightness_l').get_parameter_value().integer_value
         self.lightness_yellow_h = self.get_parameter(
             'detect.lane.yellow.lightness_h').get_parameter_value().integer_value
+        # Red range 1
+        self.hue_red1_l = self.get_parameter('detect.lane.red1.hue_l').get_parameter_value().integer_value
+        self.hue_red1_h = self.get_parameter('detect.lane.red1.hue_h').get_parameter_value().integer_value
+        self.saturation_red1_l = self.get_parameter('detect.lane.red1.saturation_l').get_parameter_value().integer_value
+        self.saturation_red1_h = self.get_parameter('detect.lane.red1.saturation_h').get_parameter_value().integer_value
+        self.lightness_red1_l = self.get_parameter('detect.lane.red1.lightness_l').get_parameter_value().integer_value
+        self.lightness_red1_h = self.get_parameter('detect.lane.red1.lightness_h').get_parameter_value().integer_value
+        # Red range 2
+        self.hue_red2_l = self.get_parameter('detect.lane.red2.hue_l').get_parameter_value().integer_value
+        self.hue_red2_h = self.get_parameter('detect.lane.red2.hue_h').get_parameter_value().integer_value
+        self.saturation_red2_l = self.get_parameter('detect.lane.red2.saturation_l').get_parameter_value().integer_value
+        self.saturation_red2_h = self.get_parameter('detect.lane.red2.saturation_h').get_parameter_value().integer_value
+        self.lightness_red2_l = self.get_parameter('detect.lane.red2.lightness_l').get_parameter_value().integer_value
+        self.lightness_red2_h = self.get_parameter('detect.lane.red2.lightness_h').get_parameter_value().integer_value
+
+        self.is_red_as_white_lane=self.get_parameter('use_read_as_white_lane').get_parameter_value().bool_value
 
         self.is_calibration_mode = self.get_parameter(
             'is_detection_calibration_mode').get_parameter_value().bool_value
@@ -174,6 +206,8 @@ class DetectLane(Node):
 
         self.mov_avg_left = np.empty((0, 3))
         self.mov_avg_right = np.empty((0, 3))
+        self.lane_fit_bef = np.array([0.0, 0.0, 0.0])
+
 
     def cbGetDetectLaneParam(self, parameters):
         for param in parameters:
@@ -204,6 +238,35 @@ class DetectLane(Node):
                 self.lightness_yellow_l = param.value
             elif param.name == 'detect.lane.yellow.lightness_h':
                 self.lightness_yellow_h = param.value
+            elif param.name == 'use_red_as_white_lane':
+                self.is_red_as_white_lane = param.value
+
+            elif param.name == 'detect.lane.red1.hue_l':
+                self.hue_red1_l = param.value
+            elif param.name == 'detect.lane.red1.hue_h':
+                self.hue_red1_h = param.value
+            elif param.name == 'detect.lane.red1.saturation_l':
+                self.saturation_red1_l = param.value
+            elif param.name == 'detect.lane.red1.saturation_h':
+                self.saturation_red1_h = param.value
+            elif param.name == 'detect.lane.red1.lightness_l':
+                self.lightness_red1_l = param.value
+            elif param.name == 'detect.lane.red1.lightness_h':
+                self.lightness_red1_h = param.value
+
+            elif param.name == 'detect.lane.red2.hue_l':
+                self.hue_red2_l = param.value
+            elif param.name == 'detect.lane.red2.hue_h':
+                self.hue_red2_h = param.value
+            elif param.name == 'detect.lane.red2.saturation_l':
+                self.saturation_red2_l = param.value
+            elif param.name == 'detect.lane.red2.saturation_h':
+                self.saturation_red2_h = param.value
+            elif param.name == 'detect.lane.red2.lightness_l':
+                self.lightness_red2_l = param.value
+            elif param.name == 'detect.lane.red2.lightness_h':
+                self.lightness_red2_h = param.value
+            
             return SetParametersResult(successful=True)
 
     def cbFindLane(self, image_msg):
@@ -272,17 +335,29 @@ class DetectLane(Node):
     def maskWhiteLane(self, image):
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-        Hue_l = self.hue_white_l
-        Hue_h = self.hue_white_h
-        Saturation_l = self.saturation_white_l
-        Saturation_h = self.saturation_white_h
-        Lightness_l = self.lightness_white_l
-        Lightness_h = self.lightness_white_h
+        if self.is_red_as_white_lane:
+            # Usar ROJO como si fuera BLANCO
+            lower_red1 = np.array([self.hue_red1_l, self.saturation_red1_l, self.lightness_red1_l])
+            upper_red1 = np.array([self.hue_red1_h, self.saturation_red1_h, self.lightness_red1_h])
+            mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
 
-        lower_white = np.array([Hue_l, Saturation_l, Lightness_l])
-        upper_white = np.array([Hue_h, Saturation_h, Lightness_h])
+            lower_red2 = np.array([self.hue_red2_l, self.saturation_red2_l, self.lightness_red2_l])
+            upper_red2 = np.array([self.hue_red2_h, self.saturation_red2_h, self.lightness_red2_h])
+            mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
 
-        mask = cv2.inRange(hsv, lower_white, upper_white)
+            mask = cv2.bitwise_or(mask1, mask2)
+        else:
+            Hue_l = self.hue_white_l
+            Hue_h = self.hue_white_h
+            Saturation_l = self.saturation_white_l
+            Saturation_h = self.saturation_white_h
+            Lightness_l = self.lightness_white_l
+            Lightness_h = self.lightness_white_h
+
+            lower_white = np.array([Hue_l, Saturation_l, Lightness_l])
+            upper_white = np.array([Hue_h, Saturation_h, Lightness_h])
+
+            mask = cv2.inRange(hsv, lower_white, upper_white)
 
         fraction_num = np.count_nonzero(mask)
 
@@ -594,7 +669,7 @@ class DetectLane(Node):
         final = cv2.addWeighted(final, 1, color_warp_lines, 1, 0)
 
         if self.pub_image_type == 'compressed':
-            if self.is_center_x_exist:
+            if self.is_center_x_exist and centerx is not None and centerx.shape[0] > 350:
                 # publishes lane center
                 msg_desired_center = Float64()
                 msg_desired_center.data = centerx.item(350)

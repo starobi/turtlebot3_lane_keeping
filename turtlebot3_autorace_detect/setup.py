@@ -47,6 +47,8 @@ setup(
             'detect_parking_sign = turtlebot3_autorace_detect.detect_parking_sign:main',
             'detect_traffic_light = turtlebot3_autorace_detect.detect_traffic_light:main',
             'detect_tunnel_sign = turtlebot3_autorace_detect.detect_tunnel_sign:main',
+            'hsv_calibrator = turtlebot3_autorace_detect.hsv_calibrator:main',
+            'hsv_calibrator_red = turtlebot3_autorace_detect.hsv_calibrator_red:main',
         ],
     },
 )

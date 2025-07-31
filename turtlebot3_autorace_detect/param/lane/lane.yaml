@@ -5,15 +5,30 @@
       lane:
         white:
           hue_h: 179
-          hue_l: 0
+          hue_l: 174
           lightness_h: 255
-          lightness_l: 105
-          saturation_h: 70
-          saturation_l: 0
-        yellow:
-          hue_h: 127
-          hue_l: 10
-          lightness_h: 255
-          lightness_l: 95
+          lightness_l: 0
           saturation_h: 255
-          saturation_l: 70
+          saturation_l: 108
+        yellow:
+          hue_h: 23
+          hue_l: 11
+          lightness_h: 255
+          lightness_l: 0
+          saturation_h: 255
+          saturation_l: 0
+        red1:
+          hue_l: 0
+          hue_h: 2
+          saturation_l: 100
+          saturation_h: 255
+          lightness_l: 100
+          lightness_h: 255
+        red2:
+          hue_l: 170
+          hue_h: 179
+          saturation_l: 100
+          saturation_h: 255
+          lightness_l: 100
+          lightness_h: 255
+    use_red_as_white_lane: true

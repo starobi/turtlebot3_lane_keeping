@@ -1,0 +1,37 @@
+# === ROS2 build and install folders ===
+build/
+install/
+log/
+
+# === Python cache ===
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# === VSCode and IDE settings ===
+.vscode/
+**/.vscode/
+.idea/
+*.code-workspace
+
+# === Temporary or swap files ===
+*.swp
+*.swo
+*~
+
+# === Environment and secrets ===
+.env
+*.env
+
+# === Mac OS or Windows system files (por si alguien trabaja en otro SO) ===
+.DS_Store
+Thumbs.db
+
+# === ROS2 launch artifacts (por si compilas .py) ===
+*.launch.pyc
+
+# === GitHub Actions artifacts (optional, no es tu caso por ahora) ===
+.github/workflows/*.log
+.github/workflows/tmp/
