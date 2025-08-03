@@ -377,10 +377,10 @@ class DetectLane(Node):
 
         how_much_short = 600 - how_much_short
 
-        if how_much_short > 100:
+        if how_much_short > 400:
             if self.reliability_white_line >= 5:
                 self.reliability_white_line -= 5
-        elif how_much_short <= 100:
+        elif how_much_short <= 400:
             if self.reliability_white_line <= 99:
                 self.reliability_white_line += 5
 
@@ -434,10 +434,10 @@ class DetectLane(Node):
 
         how_much_short = 600 - how_much_short
 
-        if how_much_short > 100:
+        if how_much_short > 400:
             if self.reliability_yellow_line >= 5:
                 self.reliability_yellow_line -= 5
-        elif how_much_short <= 100:
+        elif how_much_short <= 400:
             if self.reliability_yellow_line <= 99:
                 self.reliability_yellow_line += 5
 
@@ -672,7 +672,7 @@ class DetectLane(Node):
             if self.is_center_x_exist and centerx is not None and centerx.shape[0] > 350:
                 # publishes lane center
                 msg_desired_center = Float64()
-                msg_desired_center.data = centerx.item(350)
+                msg_desired_center.data = centerx.item(500)
                 self.pub_lane.publish(msg_desired_center)
 
             self.pub_image_lane.publish(self.cvBridge.cv2_to_compressed_imgmsg(final, 'jpg'))
@@ -681,7 +681,7 @@ class DetectLane(Node):
             if self.is_center_x_exist:
                 # publishes lane center
                 msg_desired_center = Float64()
-                msg_desired_center.data = centerx.item(350)
+                msg_desired_center.data = centerx.item(500)
                 self.pub_lane.publish(msg_desired_center)
 
             self.pub_image_lane.publish(self.cvBridge.cv2_to_imgmsg(final, 'bgr8'))

@@ -25,6 +25,8 @@ __pycache__/
 .env
 *.env
 
+.gitub/
+
 # === Mac OS or Windows system files (por si alguien trabaja en otro SO) ===
 .DS_Store
 Thumbs.db
